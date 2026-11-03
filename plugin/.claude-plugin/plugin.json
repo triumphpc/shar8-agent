@@ -1,0 +1,7 @@
+{
+  "name": "shar8-agent",
+  "version": "1.0.2",
+  "description": "Делегирование задач из shar8 локальному агенту Claude Code: по расписанию или вручную.",
+  "author": { "name": "shar8" },
+  "license": "MIT"
+}

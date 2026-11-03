@@ -1,0 +1,12 @@
+{
+  "name": "shar8",
+  "description": "Плагины shar8 для Claude Code.",
+  "owner": { "name": "shar8" },
+  "plugins": [
+    {
+      "name": "shar8-agent",
+      "source": "./plugin",
+      "description": "Делегирование задач из shar8 локальному агенту Claude Code."
+    }
+  ]
+}
