@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "mcpServers": ["tracker"],
+  "tools": ["Read"],
+  "allowedTools": ["mcp__tracker__get_issue", "mcp__tracker__search_issues"]
+}

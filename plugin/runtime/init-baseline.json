@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "format": 1,
+    "verified": false,
+    "note": "НЕ СВЕРЕН С ЖИВЫМ claude: эталон собран по описанию design.md M7 и ADR-017 п. 2 (3 встроенных плагина, 5 встроенных агентов, замер на 2.1.308). Файл spikes/results/fixtures/init-real.jsonl не снят (S-INIT: not_run, нужен SPIKE_ALLOW_LIVE_MODEL=1). Имена builtinPlugins и builtinAgents неизвестны, поэтому проверяются числом (pluginsMax, agentsMax). Решение владельца: до живого снимка работать с этой пометкой; после снимка заполнить имена и поставить verified:true.",
+    "keyFormat": "<major.minor> серии claude; неизвестная серия не блокирует прогон: permissionMode, tools и mcp_servers проверяются всегда, plugins и agents пропускаются"
+  },
+  "2.1": {
+    "verified": false,
+    "builtinPlugins": null,
+    "builtinAgents": null,
+    "pluginsMax": 3,
+    "agentsMax": 6
+  }
+}

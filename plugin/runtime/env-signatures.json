@@ -1,0 +1,136 @@
+{
+  "v": 1,
+  "comment": "Признаки ошибки окружения (design.md M7, ADR-016 п. 2). status: reproduced = текст снят вживую на claude 2.1.309 (спайки U12, S-AUTH); unverified = предварительная эвристика, не воспроизведена. where: result (поле result итогового события claude -p), stderr (хвост stderr), auth_status (stdout `claude auth status`), exit (структурный признак без текста). Классы применяются только когда ходов не было (num_turns == 0 или нет события assistant) либо процесс вышел с ненулевым кодом без событий. Без новых спайков состав не расширять.",
+  "signatures": [
+    {
+      "id": "not_logged_in_auth_status",
+      "class": "not_logged_in",
+      "where": "auth_status",
+      "pattern": "not logged in",
+      "flags": "i",
+      "status": "reproduced",
+      "source": "spikes/results/u12.json states.not_logged_in; s-auth.json states.empty_config_text; fixtures/auth-text-empty.txt (`claude auth status --text`, claude 2.1.309, код 1)",
+      "examples": {
+        "positive": [
+          { "text": "Not logged in. Run claude auth login to authenticate." }
+        ],
+        "negative": [
+          { "text": "Logged in as user@example.com via claude.ai" },
+          { "text": "{\"loggedIn\": true, \"authMethod\": \"api_key\"}" }
+        ]
+      }
+    },
+    {
+      "id": "auth_failed_result",
+      "class": "auth_failed",
+      "where": "result",
+      "pattern": "not logged in|/login|invalid api key|authentication",
+      "flags": "i",
+      "status": "unverified",
+      "source": "design.md M7, раздел «Признаки ошибки окружения» (provisional); текст -p при выходе из аккаунта в U12 не снимался (требует вызова модели)",
+      "examples": {
+        "positive": [
+          { "text": "Invalid API key · Please run /login" },
+          { "text": "Not logged in · Please run /login" }
+        ],
+        "negative": [
+          { "text": "Готово: письмо подготовлено", "numTurns": 2 },
+          { "text": "Please run /login", "numTurns": 4 }
+        ]
+      }
+    },
+    {
+      "id": "subscription_limit_result",
+      "class": "subscription_limit",
+      "where": "result",
+      "pattern": "usage limit|limit reached|resets at|resets \\d",
+      "flags": "i",
+      "status": "unverified",
+      "source": "design.md M7 (provisional): «usage limit», «limit reached», «resets at»; лимит подписки не воспроизводился (U12 states.subscription_limit)",
+      "examples": {
+        "positive": [
+          { "text": "5-hour limit reached ∙ resets 3pm" },
+          { "text": "Claude AI usage limit reached|1760000000" },
+          { "text": "Your limit resets at 3pm" }
+        ],
+        "negative": [
+          { "text": "Готово", "numTurns": 1 },
+          { "text": "The rate limit reached in the report is 80%", "numTurns": 3 },
+          { "text": "Something odd happened" }
+        ]
+      }
+    },
+    {
+      "id": "credit_exhausted_result",
+      "class": "credit_exhausted",
+      "where": "result",
+      "pattern": "credit balance is too low",
+      "flags": "i",
+      "status": "unverified",
+      "source": "design.md M7 (provisional): «credit balance is too low»; U12 states.credit_exhausted не воспроизводилось",
+      "examples": {
+        "positive": [
+          { "text": "Credit balance is too low" }
+        ],
+        "negative": [
+          { "text": "Credit balance is too low", "numTurns": 2 },
+          { "text": "Out of credit cards" }
+        ]
+      }
+    },
+    {
+      "id": "credit_exhausted_stderr",
+      "class": "credit_exhausted",
+      "where": "stderr",
+      "pattern": "credit balance is too low",
+      "flags": "i",
+      "status": "unverified",
+      "source": "design.md M7 (provisional); канал stderr предположительный",
+      "examples": {
+        "positive": [
+          { "text": "Error: Your credit balance is too low to access the API" }
+        ],
+        "negative": [
+          { "text": "warning: deprecated flag" }
+        ]
+      }
+    },
+    {
+      "id": "mcp_server_failed_stderr",
+      "class": "mcp_server_failed",
+      "where": "stderr",
+      "pattern": "failed to connect",
+      "flags": "i",
+      "status": "unverified",
+      "source": "spikes/results/u12.json states.mcp_server_failed: текст «✘ Failed to connect — ENOENT…» снят у `claude mcp list` (fixtures/mcp-list-failed.txt); в stderr `claude -p` и в поле mcp_servers[].status события init не наблюдался",
+      "examples": {
+        "positive": [
+          { "text": "bad: /nonexistent/cmd  - ✘ Failed to connect — ENOENT: no such file or directory" }
+        ],
+        "negative": [
+          { "text": "connected" }
+        ]
+      }
+    },
+    {
+      "id": "claude_crashed_exit",
+      "class": "claude_crashed",
+      "where": "exit",
+      "pattern": null,
+      "flags": "",
+      "status": "unverified",
+      "source": "design.md M7 (provisional): выход с ненулевым кодом или по сигналу до первого хода, без события result и без совпадения по тексту",
+      "rule": "nonzero_exit_without_events",
+      "examples": {
+        "positive": [
+          { "code": 1, "stdout": "" },
+          { "code": null, "signal": "SIGKILL", "stdout": "" }
+        ],
+        "negative": [
+          { "code": 0, "stdout": "{\"type\":\"result\",\"is_error\":false,\"result\":\"x\"}" },
+          { "code": 1, "stdout": "{\"type\":\"result\",\"is_error\":true,\"num_turns\":3,\"result\":\"model gave up\"}" }
+        ]
+      }
+    }
+  ]
+}
